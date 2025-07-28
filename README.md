@@ -1,10 +1,10 @@
 
-# plan-agent-korean
+# plan-agent
 <figure>
     <img src="res/PlanAgent.png" style="width:80%;">
 </figure>
 
-plan-agent-korean is an AI-powered Korean text-to-text response generator. It leverages PlanChain and a set of modular tools to answer user queries in a stepwise, explainable manner.
+plan-agent is an AI-powered English text-to-text response generator. It leverages PlanChain and a set of modular tools to answer user queries in a stepwise, explainable manner.
 
 ## Main Features & Architecture
 - Executes a series of tool permutations created by PlanChain to respond to user queries. The process consists of the following four procedures:
