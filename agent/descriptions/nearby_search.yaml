@@ -1,0 +1,23 @@
+args:
+  keyword:
+    title: Keyword
+    type: string
+  latlng:
+    additionalProperties:
+      type: number
+    title: Latlng
+    type: object
+  radius:
+    default: 200
+    title: Radius
+    type: integer
+description: "Searches for nearby places based on the user's current location. Useful\
+  \ when the user asks questions like 'cafes nearby', 'restaurants near me', etc.\n\
+  \nArgs:\n    keyword (str): Keyword for the place to search (e.g., \"cafe\", \"\
+  restaurant\")\n    latlng (dict[str, float]): The user's current location (latitude\
+  \ and longitude)\n    radius (int): Search radius (in meters). If the user requests\
+  \ \"cafes within 1km\", enter 1000. If the user does not specify a radius, the default\
+  \ is 200m.\n    \nReturns:\n    str: List of nearby places including address and\
+  \ rating for each place"
+kind: common
+name: nearby_search

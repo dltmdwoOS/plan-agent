@@ -1,0 +1,12 @@
+args:
+  message:
+    title: Message
+    type: string
+description: "This tool is a special tool. Instead of executing the tool directly\
+  \ with tool_input, the 'message' tool_input functions as your thought process.\n\
+  This tool must be triggered when no other tool is used. It can also be triggered\
+  \ when additional reasoning is needed to respond to the user's question at the current\
+  \ stage.\nIn this case, your thought should go into 'message', and that will be\
+  \ delivered to the user.\n\nArgs:\n    message (str): Your thought."
+kind: special
+name: thought

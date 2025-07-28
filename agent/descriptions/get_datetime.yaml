@@ -1,0 +1,17 @@
+args:
+  format:
+    default: '%Y-%m-%d %H:%M:%S'
+    title: Format
+    type: string
+  query:
+    title: Query
+    type: string
+description: "Returns the current date and time in the specified format.\nUseful when\
+  \ the user asks questions related to date and time, or wants the latest information\
+  \ (e.g., 'What time is it now?' 'I'm curious about yesterday's news.').\n\nArgs:\n\
+  \    query (str): User's question or request. (e.g., 'What time is it now?' 'I'm\
+  \ curious about yesterday's news.')\n    format (str): The format of the required\
+  \ datetime information. (e.g., \"%Y-%m-%d %H:%M:%S\", \"%m-%d (%A)\")\n\nReturns:\n\
+  \    str: Datetime string in the `format` format"
+kind: common
+name: get_datetime

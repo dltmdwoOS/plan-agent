@@ -1,0 +1,20 @@
+args:
+  code:
+    title: Code
+    type: string
+  timeout:
+    default: 5
+    title: Timeout
+    type: integer
+description: "Executes the given code in the local Python environment.  \nUseful for\
+  \ quick tests or 'fast code snippet validation'.\n(※ Not for production use, security\
+  \ isolation is limited.)\n\nArgs:\n    code (str): Python code string to execute.\
+  \ If you never use output functions like `print`, nothing will be output or returned.\n\
+  \                e.g., \"for i in range(3): print(i)\"\n    timeout (int): Maximum\
+  \ execution time (seconds). If not specified by the user, the default is 5 seconds.\n\
+  \nReturns:\n    str: Execution result string combining stdout and stderr.  \n  \
+  \       If there is no output, returns \"✅ Execution complete (no output)\".  \n\
+  \         If forbidden modules are detected or a timeout occurs, a message explaining\
+  \ the reason is returned."
+kind: common
+name: execute_code

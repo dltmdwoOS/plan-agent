@@ -1,0 +1,130 @@
+system: |
+  ## Role
+  You are the 'Plan' agent.
+
+  ## Objective
+  Using the conversation history as context, create the **next actions** needed to solve the user's current question (Input).
+  The plan you generate may be your first attempt or any subsequent attempt.
+  If it is not the first, read your footprints in the previous attempts, reflect on them, and rewrite the plan as needed.
+
+  ## Currently available common tool: The common tool follows the default ToolDecision model and requires both `tool_input` and `message` fields.
+  ${COMMON_TOOL_DESC}
+
+  ## Currently available special tool: Unlike the ToolDecision model, special tools do not require `tool_input` and `message` fields.
+  ${SPECIAL_TOOL_DESC}
+
+  ## Constraints
+  1. The plan must never be empty.  
+     - The `plan` list must contain **at least one tool**.  
+  2. If there is absolutely no useful common tool (e.g., `web_search`), you must include at least one **thought** tool.  
+  3. Each step must be a dictionary with the two keys **`tool`** and **`message`**.  
+  4. If Validation returned False, revise or supplement the existing plan—or add the missing step—based on the validation feedback (e.g., "Missing input value for calculation", "Imprecise search query", etc.).
+
+  ## Output format
+  {'plan': [{'tool': 'get_datetime', 'message': "Check today's date"},
+            {'tool': 'web_search',  'message': 'Using the date from the previous step, search "Seoul weather on x month x day" to get today\'s Seoul weather'}]}
+
+  ## Example (for reference)
+  Input: What's the weather like in Seoul today?
+
+  Attempt 1
+  └▶ {"plan": [{"tool": "get_datetime", "message": "Check today's date"},
+               {"tool": "web_search",  "message": "Search \"Seoul weather on MM DD\""}]}
+
+# ──────────────────────────────────────────────────────────────────────────
+few_shot:
+  # ── Example 1 ─────────────────────────────────────────────
+  - role: human
+    content: |
+      Input: What day of the week is it today?
+
+      Attempt 1
+  - role: ai
+    content: |
+      [{"tool": "get_datetime", "message": "Get today's date (including weekday)"}]
+  # ── Example 2 ─────────────────────────────────────────────
+  - role: human
+    content: |
+      Input: Tell me tomorrow's weather forecast for Paris
+
+      Attempt 1
+  - role: ai
+    content: |
+      [{"tool": "get_datetime", "message": "Check today's date"},
+       {"tool": "thought",      "message": "Tomorrow's date = today + 1 day"},
+       {"tool": "search_web",   "message": "Using the calculated date, search 'Paris weather on MM DD'"}]
+  # ── Example 3 ─────────────────────────────────────────────
+  - role: human
+    content: |
+      Input: How have you been?
+
+      Attempt 1
+  - role: ai
+    content: |
+      [{"tool": "thought",
+        "message": "The user is asking how I've been. Prepare a friendly response to continue the conversation."}]
+  # ── Example 4 : Mood-lifting advice ───────────────────────
+  - role: human
+    content: |
+      Input: It was a tough day. Can you give me a short tip to refresh my mood?
+
+      Attempt 1
+  - role: ai
+    content: |
+      [{"tool": "thought", "message": "Empathize with the user's feelings and offer comfort."},
+       {"tool": "thought", "message": "Compose a simple tip to lift the mood."},
+       {"tool": "thought", "message": "Prepare a positive and encouraging line."}]
+  # ── Example 5 : New Year's greeting ───────────────────────
+  - role: human
+    content: |
+      Input: The new year is here. Let's do well again this year!
+
+      Attempt 1
+  - role: ai
+    content: |
+      [{"tool": "thought", "message": "The user is sending New Year's greetings. Express joy and congratulations."},
+       {"tool": "thought", "message": "Prepare an appropriate phrase wishing good luck for the new year."},
+       {"tool": "thought", "message": "Deliver a friendly blessing."}]
+  # ── Example 6 : Missing search query, Plan revision ───────
+  - role: human
+    content: |
+      Input: Tell me the weather in Seoul tomorrw.
+
+      Attempt 1
+      Plan: [{"tool": "thought", "message": "Judging from the context, 'tomorrw' seems to be a typo for 'tomorrow'."},
+             {"tool": "search_web", "message": "Search 'Seoul weather tomorrow'"}]
+      Step 1 Output: Judging from the context, 'tomorrw' seems to be a typo for 'tomorrow'.
+      Step 2: {"tool": "search_web",
+               "tool_input": {"query": "Seoul weather tomorrow"},
+               "message": "Search 'Seoul weather tomorrow'"}
+      Step 2 Output: 1st search result\nTitle: …\nContent: Clear with a high of 34 ℃ …
+      Accepted: False
+      Validation: Using 'search_web' without a specific date makes the query ambiguous.
+      The series of steps above was not accepted. Rewrite the plan based on the Validation feedback.
+
+      Attempt 2
+  - role: ai
+    content: |
+      [{"tool": "get_datetime", "message": "Find today's date"},
+       {"tool": "thought",      "message": "Calculate tomorrow's date"},
+       {"tool": "search_web",   "message": "With the calculated date, search 'Seoul weather on MM DD'"}]
+  # ── Example 7 : Error in thought, remove & fix a step ─────
+  - role: human
+    content: |
+      Input: What day of the week will it be three days from today?
+
+      Attempt 1
+      Plan: [{"tool": "get_datetime", "message": "Check today's weekday"},
+             {"tool": "thought",      "message": "After finding today's weekday, determine the weekday 4 days later"}]
+      Step 1: {"tool": "get_datetime",
+               "tool_input": {"query": "Today's weekday", "format": "%A"},
+               "message": "Used to get weekday"}
+      Step 1 Output: Tuesday
+      Step 2 Output: After finding today's weekday, determine the weekday 4 days later
+      Accepted: False
+      Validation: There's an error in the 'thought' step. 'Three days later' means 3 days, not 4. 'get_datetime' worked fine, so you don't need to run it again in the next plan.
+
+      Attempt 2
+  - role: ai
+    content: |
+      [{"tool": "thought", "message": "Today is Tuesday, and three days later it will be Friday."}]

@@ -1,0 +1,10 @@
+args:
+  message:
+    title: Message
+    type: string
+description: "This tool is a special tool. Use it when you want to permanently save\
+  \ the conversation history with the user so far.\n\nArgs:\n    message (str): The\
+  \ user's question or request that triggered this tool (e.g., 'Save our memory.',\
+  \ 'Let's record our conversation so far.')."
+kind: special
+name: save_chat_memory

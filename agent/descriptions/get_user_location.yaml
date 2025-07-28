@@ -1,0 +1,10 @@
+args:
+  query:
+    title: Query
+    type: string
+description: "Determines the user's current location. Useful when the user asks questions\
+  \ like 'Where am I?' or 'What is my current location?'.\n\nArgs:\n    query (str):\
+  \ User's question or request (e.g., \"Where am I?\", \"Tell me my current location\"\
+  )\n\nReturns:\n    str: The user's current location information"
+kind: common
+name: get_user_location
