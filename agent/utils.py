@@ -53,13 +53,13 @@ def load_prompt(
     }
     rendered = Template(raw).safe_substitute(**safe_vars)
     cfg = yaml.safe_load(rendered)
-
-    system_messages = [SystemMessage(content=cfg["system"])]
+    
+    system_messages = [SystemMessage(content=cfg.get('system', ''))]
     few_shot_messages = [
         HumanMessage(content=m["content"])
         if m["role"] == "human"
         else AIMessage(content=m["content"])
-        for m in cfg["few_shot"]
+        for m in cfg.get('few_shot', [])
     ]
     return system_messages, few_shot_messages
 

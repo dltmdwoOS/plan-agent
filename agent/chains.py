@@ -13,6 +13,7 @@ CHAINS = {
         ChainConfig("ValidationChain",  PROMPT_DIR / "validation.yaml"),
         ChainConfig("ResponseChain",    PROMPT_DIR / "response.yaml"),
         ChainConfig("VisionChain",      PROMPT_DIR / "vision.yaml"),
+        ChainConfig("SummaryChain",     PROMPT_DIR / "summary.yaml"),
     ]
 }
 
@@ -172,6 +173,23 @@ class VisionChain(BaseChain):
         self.llm = get_llm(
             CHAINS[self.name],
             tags=["Vision"],
+            temperature=0.3
+        )
+        self.prompt = build_prompt(
+            CHAINS[self.name],
+            extra_placeholders=["memory", "input"]
+        )
+        self.chain = self.prompt | self.llm | StrOutputParser()
+        
+class SummaryChain(BaseChain):
+    def __init__(self, name: str = "SummaryChain"):
+        self.name = name
+        self.description = (
+            
+        )
+        self.llm = get_llm(
+            CHAINS[self.name],
+            tags=["Summary"],
             temperature=0.3
         )
         self.prompt = build_prompt(

@@ -67,6 +67,5 @@ print(response)
 ```
 
 ## TODO
-- Token compressor : summarize overall memory for compressing input token.
-    - How?
-    - Threshold?
+
+- Entity Memory : A dynamic memory for ToolChain.

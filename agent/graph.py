@@ -1,13 +1,12 @@
 from dotenv import load_dotenv
 import yaml
 
+from agent.memory.memory import Memory
 from agent.path import DESC_DIR
 load_dotenv()
 from langchain_core.messages import (
     HumanMessage,
-    AIMessage,
-    messages_to_dict,
-    messages_from_dict
+    AIMessage
 )
 
 from agent.tool_registry import common_tool_registry as TOOL_REGISTRY, special_tool_registry as SPECIAL_TOOL_REGISTRY
@@ -15,18 +14,18 @@ from agent.chains import PlanChain, ToolChain, ValidationChain, ResponseChain
 from agent.utils import save_chat_memory, load_chat_memory
 
 class Agent:
-    def __init__(self, session_id, recursion_limit=20):
+    def __init__(self, session_id, recursion_limit=5, max_memory_tokens=1e4):
         self.session_id = session_id
         self.recursion_limit = recursion_limit
-        self.memory = []
+        self.memory = Memory(max_memory_tokens)
         self.chains = [] # Name of chains used in this agent, for debugging purposes
         
     def chat(self, user_input: str, debug=False):
         raise NotImplementedError("This method should be implemented in subclasses.")
      
 class PlanAgent(Agent):
-    def __init__(self, session_id, recursion_limit=3, is_stream: bool=True):
-        super().__init__(session_id, recursion_limit)
+    def __init__(self, session_id, recursion_limit=5, max_memory_tokens=1e4, is_stream: bool=True):
+        super().__init__(session_id, recursion_limit, max_memory_tokens)
         
         self.tools = TOOL_REGISTRY.values()
         self.special_tools = SPECIAL_TOOL_REGISTRY
@@ -43,10 +42,6 @@ class PlanAgent(Agent):
         ]
 
         self.save_request = False
-        
-        messages_dict = load_chat_memory()
-        if messages_dict is not None:
-            self.memory = messages_from_dict(messages_dict) 
 
     def _add_buffer(self, buf: list, string: str, debug: bool=False):
         buf.append(string)
@@ -123,14 +118,14 @@ class PlanAgent(Agent):
             self.save_request = True
             return "Conversation history has been saved successfully."
         elif tool_name == "clear_chat_memory":
-            self.memory = []
+            self.memory.clear_memory()
             return "Conversation history has been reset successfully."
         return None
 
     def _response(self, buffer):
         """Get response as string type, and simultaneously print it."""
         input = [HumanMessage(content="\n".join(buffer))]
-        response = self.response_chain.invoke({"memory": self.memory, "input": input})
+        response = self.response_chain.invoke({"memory": self.memory.memory, "input": input})
 
         if type(response) == str:
             print(f"Response:\n{response}")
@@ -160,7 +155,7 @@ class PlanAgent(Agent):
             
             # Planning Step
             _input = [HumanMessage(content="\n".join(_buffer))]
-            plan = self.plan_chain.invoke({"memory": self.memory, "input": _input}).plan
+            plan = self.plan_chain.invoke({"memory": self.memory.memory, "input": _input}).plan
             self._add_buffer(_buffer, f"Plan: {plan}", is_debug)
 
             # Tool Step
@@ -188,7 +183,7 @@ class PlanAgent(Agent):
                     ## 1. Complete the current step
                     self._add_buffer(_buffer, f"Current Step: {tool_json} TODO!")
                     _input = [HumanMessage(content="\n".join(_buffer))]
-                    tool_json = self.tool_chain.invoke(tool=tool_name, vars={"memory": self.memory, "input": _input})
+                    tool_json = self.tool_chain.invoke(tool=tool_name, vars={"memory": self.memory.memory, "input": _input})
                     _buffer.pop()  # Remove the last incomplete tool from the buffer
                 elif validation=='jump':
                     pass
@@ -246,10 +241,6 @@ class PlanAgent(Agent):
 
         # If save requirement from `save_chat_memory`
         if self.save_request:
-            try:
-                messages_dict = messages_to_dict(self.memory)
-                save_chat_memory(messages_dict)
-                self.save_request = False # Initialize save_request to false after save chat_memory
-            except Exception as e:
-                return f"An error occurred while saving the conversation history: {e}"
+            self.memory.save_memory()
+            self.save_request = False
         return response
