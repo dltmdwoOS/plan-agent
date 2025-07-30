@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import yaml
 
-from agent.memory.memory import Memory
+from agent.memory import Memory
 from agent.path import DESC_DIR
 load_dotenv()
 from langchain_core.messages import (
