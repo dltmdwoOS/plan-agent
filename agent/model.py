@@ -64,3 +64,5 @@ class Validation(BaseModel):
         description="Description message for the validation result. Optional, can provide additional information about the validation result."
     )
     
+class EntityMemory(BaseModel):
+    pass

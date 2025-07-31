@@ -1,4 +1,4 @@
-from agent.chains import SummaryChain
+from agent.chains import SummaryChain, EntityMemoryChain
 from agent.utils import load_chat_memory, save_chat_memory
 from langchain_core.messages import (
     HumanMessage,
@@ -54,3 +54,13 @@ class Memory:
         self.memory = []
         self.tokens = 0
     
+    
+class EntityMemory:
+    def __init__(self):
+        self.memory = {}
+        self.entity_memory_chain = EntityMemoryChain()
+        
+    def query(self):
+        pass
+        
+        
