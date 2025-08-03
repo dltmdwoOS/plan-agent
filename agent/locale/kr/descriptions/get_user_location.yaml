@@ -1,0 +1,9 @@
+args:
+  query:
+    title: Query
+    type: string
+description: "사용자의 현재 위치를 파악합니다. 사용자가 '내 위치' 또는 '현재 위치'와 같은 질문을 할 때 유용합니다.\n\nArgs:\n\
+  \    query (str): 사용자의 질문이나 요청 (예: \"내 위치가 어디야?\", \"현재 위치 알려줘\")\n\nReturns:\n\
+  \    str: 사용자의 현재 위치 정보"
+kind: common
+name: get_user_location

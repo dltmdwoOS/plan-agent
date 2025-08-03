@@ -1,0 +1,9 @@
+args:
+  query:
+    title: Query
+    type: string
+description: "Screenshot을 찍어 파일로 저장하고, 해당 파일의 경로를 리턴합니다.\n\nArgs:\n    query (str):\
+  \ 사용자의 질문이나 요청 (예: \"지금 내가 보고 있는 화면을 찍어서 파일명을 말해줘.\", \"너도 지금 내가 보고 있는 영상 같이 보고\
+  \ 싶지? 현재 창 화면을 찍어봐\")\n\nReturns:\n    str: 방금 찍은 스크린샷의 파일 경로"
+kind: common
+name: get_image_from_screen

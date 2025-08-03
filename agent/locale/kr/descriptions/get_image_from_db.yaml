@@ -1,0 +1,10 @@
+args:
+  query:
+    title: Query
+    type: string
+description: "예전 대화에 사용되었던 사진을 다시 보고 싶을 때, 이 tool을 사용해 그 사진에 대한 설명이나 당시 메세지 기록을 query로\
+  \ 삼아 사진의 파일명을 얻어낼 수 있습니다.\n\nArgs:\n    query (str): 사진을 찾기 위한 쿼리 (예: \"예전에 '슈퍼맨과\
+  \ 배트맨이 싸우고 있는 만화의 한 장면'이라고 반응했던 사진\", \"푸른색 바다 앞에서 강아지가 뛰놀고 있는 사진\")\n\nReturns:\n\
+  \    str: 쿼리로 찾아낸 사진의 파일 경로. 만약 사진이 검색되지 않았거나 오류가 발생했다면 빈 string을 반환함."
+kind: common
+name: get_image_from_db

@@ -1,0 +1,9 @@
+args:
+  message:
+    title: Message
+    type: string
+description: "이 tool은 special tool입니다. 지금까지 유저와의 대화 기록을 영구히 저장하고 싶을 때 사용합니다.\n\nArgs:\n\
+  \    message (str): 이 tool을 발동하게 된 사용자의 질문이나 요청 (예: '우리의 기억을 저장해줘.', '지금까지의 대화를\
+  \ 기록해두자.')."
+kind: special
+name: save_chat_memory

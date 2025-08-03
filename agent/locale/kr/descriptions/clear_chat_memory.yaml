@@ -1,0 +1,9 @@
+args:
+  message:
+    title: Message
+    type: string
+description: "이 tool은 special tool입니다. 지금까지 유저와의 대화 기록을 삭제하거나 초기화하고 싶을 때 사용합니다.\n\n\
+  Args:\n    message (str): 이 tool을 발동하게 된 사용자의 질문이나 요청 (예: '기억을 삭제해줘.', '지금까지의 대화\
+  \ 내역을 초기화해줘.')"
+kind: special
+name: clear_chat_memory

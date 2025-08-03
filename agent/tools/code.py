@@ -1,24 +1,13 @@
 # execute_code_local.py
 import subprocess, tempfile, os, textwrap, sys, ast
 from agent.tool_registry import common_tool_registry
+from agent.utils import load_locale_const
+
+const = load_locale_const()
 
 @common_tool_registry(
     name_or_callable="execute_code",
-    description="""
-    Executes the given code in the local Python environment.  
-    Useful for quick tests or 'fast code snippet validation'.
-    (※ Not for production use, security isolation is limited.)
-
-    Args:
-        code (str): Python code string to execute. If you never use output functions like `print`, nothing will be output or returned.
-                    e.g., "for i in range(3): print(i)"
-        timeout (int): Maximum execution time (seconds). If not specified by the user, the default is 5 seconds.
-
-    Returns:
-        str: Execution result string combining stdout and stderr.  
-             If there is no output, returns "✅ Execution complete (no output)".  
-             If forbidden modules are detected or a timeout occurs, a message explaining the reason is returned.
-    """
+    description=const.EXECUTE_CODE_CONST['desc']
 )
 def execute_code(code: str, timeout: int = 5) -> str:
     FORBIDDEN = {
@@ -27,16 +16,16 @@ def execute_code(code: str, timeout: int = 5) -> str:
     }
     lowered = code.replace(" ", "").lower()
     if any(bad in lowered for bad in FORBIDDEN):
-        return "❌ Execution denied due to forbidden modules/functions."
+        return const.EXECUTE_CODE_CONST['tabu_import']
 
     try:
         tree = ast.parse(code)
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
                 if any(n.name in {"os", "sys", "subprocess", "socket"} for n in node.names):
-                    return "❌ Forbidden module import detected → Execution denied"
+                    return const.EXECUTE_CODE_CONST['forbidden_module']
     except Exception:
-        return "❌ Code parsing failed"
+        return const.EXECUTE_CODE_CONST['parsing_failed']
 
     with tempfile.NamedTemporaryFile("w", suffix=".py", delete=False) as f:
         f.write(textwrap.dedent(code))
@@ -51,8 +40,8 @@ def execute_code(code: str, timeout: int = 5) -> str:
             timeout=timeout
         )
         output = (proc.stdout + proc.stderr)[:4000]
-        return output or "✅ Execution complete (no output)"
+        return output or const.EXECUTE_CODE_CONST['no_output']
     except subprocess.TimeoutExpired:
-        return f"⏰ Execution time limit exceeded ({timeout} seconds)."
+        return const.EXECUTE_CODE_CONST['timeout'].format(timeout=timeout)
     finally:
         os.remove(script_path)

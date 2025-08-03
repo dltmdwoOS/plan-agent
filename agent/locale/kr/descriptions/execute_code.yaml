@@ -1,0 +1,17 @@
+args:
+  code:
+    title: Code
+    type: string
+  timeout:
+    default: 5
+    title: Timeout
+    type: integer
+description: "로컬 Python 환경에서 입력한 코드를 실행합니다.  \n간단한 테스트나 ‘빠른 코드 스니펫 검증’이 필요할 때 유용합니다.\n\
+  (※ 프로덕션용이 아니며, 보안 격리가 제한적입니다.)\n\nArgs:\n    code (str): 실행할 Python 코드 문자열. `print`\
+  \ 등의 출력 함수를 한 번도 사용하지 않는다면 그 어떤 것도 출력 및 반환하지 않습니다.\n                예) \"for i in\
+  \ range(3): print(i)\"\n    timeout (int): 최대 실행 시간(초). 사용자가 별도로 지정하지 않으면 5 초가 기본값입니다.\n\
+  \nReturns:\n    str: 표준 출력(stdout)과 표준 오류(stderr)을 합친 실행 결과 문자열.  \n         출력이\
+  \ 없으면 \"✅ 실행 완료 (출력 없음)\"을 반환하며,  \n         금지 모듈 탐지·타임아웃 발생 시에는 해당 사유를 안내하는 메시지를\
+  \ 반환합니다."
+kind: common
+name: execute_code

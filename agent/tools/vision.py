@@ -5,18 +5,13 @@ from agent.chains import VisionChain
 from agent.path import IMAGE_DIR
 from agent.db import store_image_desc, query_by_text
 from agent.tool_registry import common_tool_registry
+from agent.utils import load_locale_const
+
+const = load_locale_const()
 
 @common_tool_registry(
     name_or_callable="get_image_from_screen",
-    description="""
-    Takes a screenshot, saves it as a file, and returns the file path.
-    
-    Args:
-        query (str): User's question or request (e.g., "Take a screenshot of what I'm seeing now and tell me the filename.", "Don't you want to see the video I'm watching? Take a screenshot of the current window.")
-    
-    Returns:
-        str: The file path of the screenshot just taken
-    """
+    description=const.GET_IMAGE_FROM_SCREEN_CONST['desc']
 )
 def get_image_from_screen(query: str) -> str:
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -27,15 +22,7 @@ def get_image_from_screen(query: str) -> str:
 
 @common_tool_registry(
     name_or_callable="get_image_from_db",
-    description="""
-    When you want to see a photo used in a previous conversation again, use this tool to get the filename of the photo by using a description or message record at that time as a query.
-    
-    Args:
-        query (str): Query to find the photo (e.g., "The photo you reacted to as 'a scene from a comic where Superman and Batman are fighting' before", "The photo of a dog running in front of the blue sea")
-    
-    Returns:
-        str: The file path of the photo found by the query. If the photo is not found or an error occurs, returns an empty string.
-    """
+    description=const.GET_IMAGE_FROM_DB_CONST['desc']
 )
 def get_image_from_db(query: str) -> str:
     metadatas = query_by_text(query).get('metadatas', None)
@@ -45,16 +32,7 @@ def get_image_from_db(query: str) -> str:
 vision_chain = VisionChain()
 @common_tool_registry(
     name_or_callable="vision_tool",
-    description="""
-    Responds using both the user's query and the image at the same time.
-    When the user includes the image file path directly in the question, or when an image is needed in the current context, this tool is called with the image path to obtain a multimodal answer.
-    
-    Args:
-        query (str): User's question or request (e.g., "Describe this photo.", "What is the name of the character on the left side of this picture?")
-        image_path (str): File path of the attached image
-    Returns:
-        str: Answer to the user's query (using the image)
-    """
+    description=const.VISION_TOOL_CONST['desc']
 )
 def vision_tool(query: str, image_path: str) -> str:
     from langchain_core.messages import HumanMessage, messages_from_dict

@@ -1,0 +1,15 @@
+args:
+  format:
+    default: '%Y-%m-%d %H:%M:%S'
+    title: Format
+    type: string
+  query:
+    title: Query
+    type: string
+description: "현재 날짜와 시간을 지정된 형식으로 반환합니다. \n만약 유저가 날짜와 시간에 관련된 질문을 하거나, 최신 정보를 궁금해\
+  \ 할 때 유용합니다 (예: '현재 시간은 몇 시야?' '어제자 뉴스가 궁금해.').\n\nArgs:\n    query (str): 사용자의\
+  \ 질문이나 요청. (예: '현재 시간은 몇 시야?' '어제자 뉴스가 궁금해.')\n    format (str): 필요한 datetime 정보의\
+  \ 형식. (예: \"%Y-%m-%d %H:%M:%S\", \"%m-%d (%A)\")\n\nReturns:\n    str: `format`의\
+  \ 형식을 갖는 datetime string"
+kind: common
+name: get_datetime

@@ -5,9 +5,9 @@ args:
 description: "When you want to see a photo used in a previous conversation again,\
   \ use this tool to get the filename of the photo by using a description or message\
   \ record at that time as a query.\n\nArgs:\n    query (str): Query to find the photo\
-  \ (e.g., \"The photo you reacted to as 'a scene from a comic where Superman and\
-  \ Batman are fighting' before\", \"The photo of a dog running in front of the blue\
-  \ sea\")\n\nReturns:\n    str: The file path of the photo found by the query. If\
-  \ the photo is not found or an error occurs, returns an empty string."
+  \ (e.g., 'The photo you reacted to as 'a scene from a comic where Superman and Batman\
+  \ are fighting' before', 'The photo of a dog running in front of the blue sea')\n\
+  \nReturns:\n    str: The file path of the photo found by the query. If the photo\
+  \ is not found or an error occurs, returns an empty string."
 kind: common
 name: get_image_from_db

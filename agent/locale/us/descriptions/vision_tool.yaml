@@ -9,8 +9,8 @@ description: "Responds using both the user's query and the image at the same tim
   When the user includes the image file path directly in the question, or when an\
   \ image is needed in the current context, this tool is called with the image path\
   \ to obtain a multimodal answer.\n\nArgs:\n    query (str): User's question or request\
-  \ (e.g., \"Describe this photo.\", \"What is the name of the character on the left\
-  \ side of this picture?\")\n    image_path (str): File path of the attached image\n\
+  \ (e.g., 'Describe this photo.', 'What is the name of the character on the left\
+  \ side of this picture?')\n    image_path (str): File path of the attached image\n\
   Returns:\n    str: Answer to the user's query (using the image)"
 kind: common
 name: vision_tool

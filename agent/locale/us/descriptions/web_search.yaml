@@ -3,9 +3,9 @@ args:
     title: Query
     type: string
 description: "Performs a web search and returns the top k results as a string. (default\
-  \ k=4)\n        \n        Args:\n            query (str): Search query (e.g., 'News\
-  \ headlines from Time magazine on August 12th', 'Meaning of the idiom 無爲轉變')\n \
-  \       \n        Returns:\n            str: Search results string. (e.g., '1st\
-  \ search result\nTitle: ...\nURL: ...\nContent: ...\n\n2nd search result ...')"
+  \ k=4)\n\nArgs:\n    query (str): Search query (e.g., 'News headlines from Time\
+  \ magazine on August 12th', 'Meaning of the idiom 無爲轉變')\n\nReturns:\n    str: Search\
+  \ results string. (e.g., '1st search result\\nTitle: ...\\nURL: ...\\nContent: ...\\\
+  n\\n2nd search result ...')"
 kind: common
 name: web_search

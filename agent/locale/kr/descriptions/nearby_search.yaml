@@ -1,0 +1,20 @@
+args:
+  keyword:
+    title: Keyword
+    type: string
+  latlng:
+    additionalProperties:
+      type: number
+    title: Latlng
+    type: object
+  radius:
+    default: 200
+    title: Radius
+    type: integer
+description: "사용자의 현재 위치를 기준으로 주변 장소를 검색합니다. 사용자가 '주변에 있는 카페', '내 근처의 음식점'과 같은 질문을\
+  \ 할 때 유용합니다.\n\nArgs:\n    keyword (str): 검색할 장소의 키워드 (예: \"카페\", \"음식점\")\n   \
+  \ latlng (dict[str, float]): 사용자의 현재 위치 (위도와 경도)\n    radius (int): 검색 반경 (미터 단위),\
+  \ 만약 사용자가 \"1km 이내의 카페\"라고 요청하면 1000을 입력합니다. 사용자가 반경을 명시하지 않으면 기본값은 200m입니다.\n \
+  \   \nReturns:\n    str: 각 장소의 주소와 평점을 포함한 주변 장소 목록"
+kind: common
+name: nearby_search

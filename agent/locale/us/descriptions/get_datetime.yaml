@@ -11,7 +11,7 @@ description: "Returns the current date and time in the specified format.\nUseful
   \ (e.g., 'What time is it now?' 'I'm curious about yesterday's news.').\n\nArgs:\n\
   \    query (str): User's question or request. (e.g., 'What time is it now?' 'I'm\
   \ curious about yesterday's news.')\n    format (str): The format of the required\
-  \ datetime information. (e.g., \"%Y-%m-%d %H:%M:%S\", \"%m-%d (%A)\")\n\nReturns:\n\
+  \ datetime information. (e.g., '%Y-%m-%d %H:%M:%S', '%m-%d (%A)')\n\nReturns:\n\
   \    str: Datetime string in the `format` format"
 kind: common
 name: get_datetime
