@@ -1,12 +1,17 @@
+import os
 from pathlib import Path
 
+LOCALE = os.getenv("LOCALE")
 BASE_DIR   = Path(__file__).resolve().parent
-PROMPT_DIR = BASE_DIR / 'prompts'
 MEMORY_DIR = BASE_DIR / 'memory'
-DESC_DIR   = BASE_DIR / 'descriptions'
 IMAGE_DIR  = MEMORY_DIR / 'image'
 
+LOCALE_DIR = BASE_DIR / 'locale' / LOCALE
+PROMPT_DIR = LOCALE_DIR / 'prompts'
+DESC_DIR   = LOCALE_DIR / 'descriptions'
+
+LOCALE_DIR.mkdir(parents=True, exist_ok=True)
 PROMPT_DIR.mkdir(parents=True, exist_ok=True)
-MEMORY_DIR.mkdir(parents=True, exist_ok=True)
 DESC_DIR.mkdir(parents=True, exist_ok=True)
+MEMORY_DIR.mkdir(parents=True, exist_ok=True)
 IMAGE_DIR.mkdir(parents=True, exist_ok=True)

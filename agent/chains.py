@@ -1,9 +1,11 @@
+
 from pydantic import ValidationError
 from langchain_core.output_parsers import StrOutputParser
 
-from agent.model import Plan, ToolDecision, Validation, ChainConfig
+from agent.model.chain_config import ChainConfig
+from agent.model.model import Plan, ToolDecision, Validation
 from agent.llm import get_llm
-from agent.utils import build_prompt, load_prompt, load_tool_descs, tool_desc_format
+from agent.utils import build_prompt, load_tool_descs, tool_desc_format
 from agent.path import PROMPT_DIR
 
 CHAINS = {

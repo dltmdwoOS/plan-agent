@@ -1,4 +1,4 @@
-from agent.chains import SummaryChain, EntityMemoryChain
+from agent.chains import SummaryChain
 from agent.utils import load_chat_memory, save_chat_memory
 from langchain_core.messages import (
     HumanMessage,

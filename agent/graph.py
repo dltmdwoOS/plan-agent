@@ -1,9 +1,11 @@
 from dotenv import load_dotenv
+load_dotenv()
+
 import yaml
 
 from agent.memory import Memory
 from agent.path import DESC_DIR
-load_dotenv()
+
 from langchain_core.messages import (
     HumanMessage,
     AIMessage
@@ -11,7 +13,11 @@ from langchain_core.messages import (
 
 from agent.tool_registry import common_tool_registry as TOOL_REGISTRY, special_tool_registry as SPECIAL_TOOL_REGISTRY
 from agent.chains import PlanChain, ToolChain, ValidationChain, ResponseChain
-from agent.utils import save_chat_memory, load_chat_memory
+from agent.utils import load_locale_const
+const = load_locale_const()
+TOOL_VALIDATOR_MSG  = const.TOOL_VALIDATOR_MSG
+SPECIAL_TOOL_MSG    = const.SPECIAL_TOOL_MSG
+CHAT_MSG            = const.CHAT_MSG
 
 class Agent:
     def __init__(self, session_id, recursion_limit=5, max_memory_tokens=1e4):
@@ -75,24 +81,24 @@ class PlanAgent(Agent):
         # Check for unexpected keys.
         unexpected_keys = json_keys - allowed_keys
         if unexpected_keys:
-            return ("false", f"Unexpected keys present: {unexpected_keys}. Allowed keys are {allowed_keys}.")
+            return ("false", TOOL_VALIDATOR_MSG['unexpected_keys'].format(unexpected_keys=unexpected_keys, allowed_keys=allowed_keys))
         
         # Check for missing required keys.
         missing_keys = required_keys - json_keys
         if missing_keys:
-            return ("false", f"Missing required keys: {missing_keys}.")
+            return ("false", TOOL_VALIDATOR_MSG['missing_keys'].format(missing_keys=missing_keys))
         
         # If 'tool_input' exists, try to perform YAML args comparison.
         if "tool_input" in tool_json:
             tool_name = tool_json["tool"]
             yaml_path = DESC_DIR / f"{tool_name}.yaml"
             if not yaml_path.exists():
-                return ("false", f"Description file not found for tool: {tool_name}.")
+                return ("false", TOOL_VALIDATOR_MSG['yaml_path_not_exist'].format(tool_name=tool_name))
             try:
                 with open(yaml_path, "r", encoding="utf-8") as f:
                     desc_yaml = yaml.safe_load(f)
             except Exception as e:
-                return ("false", f"Failed to load YAML for tool {tool_name}: {e}")
+                return ("false", TOOL_VALIDATOR_MSG['yaml_load_error'].format(tool_name=tool_name, e=e))
             
             # Get the 'args' section from the YAML.
             expected_args = desc_yaml.get("args")
@@ -116,10 +122,10 @@ class PlanAgent(Agent):
             return tool_output
         elif tool_name == "save_chat_memory":
             self.save_request = True
-            return "Conversation history has been saved successfully."
+            return SPECIAL_TOOL_MSG['save_chat_memory']
         elif tool_name == "clear_chat_memory":
             self.memory.clear_memory()
-            return "Conversation history has been reset successfully."
+            return SPECIAL_TOOL_MSG['clear_chat_memory']
         return None
 
     def _response(self, buffer):
@@ -149,14 +155,14 @@ class PlanAgent(Agent):
         recursion = 0
         accepted = False
         
-        self._add_buffer(_buffer, f"Input: {user_input}", is_debug)
+        self._add_buffer(_buffer, CHAT_MSG['input_message'].format(user_input=user_input), is_debug)
         while recursion < self.recursion_limit and not accepted:
-            self._add_buffer(_buffer, f"\nAttempt {recursion+1}", is_debug)
+            self._add_buffer(_buffer, CHAT_MSG['attempt_message'].format(n_recursion=recursion+1), is_debug)
             
             # Planning Step
             _input = [HumanMessage(content="\n".join(_buffer))]
             plan = self.plan_chain.invoke({"memory": self.memory.memory, "input": _input}).plan
-            self._add_buffer(_buffer, f"Plan: {plan}", is_debug)
+            self._add_buffer(_buffer, CHAT_MSG['plan_message'].format(plan=plan), is_debug)
 
             # Tool Step
             if not plan:
@@ -166,7 +172,7 @@ class PlanAgent(Agent):
                 ## 0. Incomplete tool validation
                 validation, message = self._tool_validator(tool_json)
                 if validation=='false':
-                    self._add_buffer(_buffer, f"Step {step+1} Error : {message}", is_debug)
+                    self._add_buffer(_buffer, CHAT_MSG['tool_validation_false_message'].format(step=step+1, message=message), is_debug)
                     break # To validation step
                 
                 tool_name, tool_message = tool_json['tool'], tool_json['message']
@@ -175,13 +181,13 @@ class PlanAgent(Agent):
                 # ---------------------------- Special tool : do not need any tool input ----------------------------
                 tool_output = self._special_tool_use(tool_name, tool_message)
                 if tool_output:
-                    self._add_buffer(_buffer, f"Step {step+1} Output: {tool_output}", is_debug)
+                    self._add_buffer(_buffer, CHAT_MSG['tool_output_message'].format(step=step+1, tool_output=tool_output), is_debug)
                     continue
 
                 # ----------------------------   Common tool : do need some tool inputs   ----------------------------
                 elif validation=='true':
                     ## 1. Complete the current step
-                    self._add_buffer(_buffer, f"Current Step: {tool_json} TODO!")
+                    self._add_buffer(_buffer, CHAT_MSG['current_tool_message'].format(tool_json=tool_json))
                     _input = [HumanMessage(content="\n".join(_buffer))]
                     tool_json = self.tool_chain.invoke(tool=tool_name, vars={"memory": self.memory.memory, "input": _input})
                     _buffer.pop()  # Remove the last incomplete tool from the buffer
@@ -189,19 +195,12 @@ class PlanAgent(Agent):
                     pass
                 
                 ## 2. Find the tool in the available tools and invoke it
-                self._add_buffer(_buffer, f"Plan Step {step+1} Tool: {tool_json}", is_debug)
+                self._add_buffer(_buffer, CHAT_MSG['tool_complete_message'].format(step=step+1, tool_json=tool_json), is_debug)
                 
                 tool, tool_input = tool_json.tool, tool_json.tool_input
                 tool_output = self._tool_use(tool, tool_input)
                 if tool_output:
-                    self._add_buffer(
-                        _buffer, 
-                        (
-                            f"Plan Step {step+1} Tool Output:\n"
-                            f"<OUTPUT START>\n{tool_output}\n<OUTPUT END>"
-                        ),
-                        is_debug
-                    )
+                    self._add_buffer(_buffer, CHAT_MSG['tool_output_message'].format(step=step+1, tool_output=tool_output), is_debug)
                     continue
 
                 if tool_output is None:
@@ -210,31 +209,17 @@ class PlanAgent(Agent):
             # Validation Step
             _input = [HumanMessage(content="\n".join(_buffer))]
             validation = self.validation_chain.invoke({"input": _input})
+            validation_message = validation.message
             if validation.is_valid:
-                self._add_buffer(
-                    _buffer,
-                    (
-                        "Accepted: True\n"
-                        f"Validation Message: {validation.message}"
-                    ),
-                    is_debug
-                )
+                self._add_buffer(_buffer, CHAT_MSG['validation_true_message'].format(validation_message=validation_message), is_debug)
                 accepted = True
             else:
-                self._add_buffer(
-                    _buffer, 
-                    (
-                        "Accepted: False\n"
-                        f"Validation Message: {validation.message}\n"
-                        "The above process did not pass validation. You need to re-plan based on the validation result."
-                    ),
-                    is_debug
-                )
+                self._add_buffer(_buffer, CHAT_MSG['validation_false_message'].format(validation_message=validation_message), is_debug)
                 recursion += 1
         
         # Response Step
         if not accepted:
-            self._add_buffer(_buffer, "Maximum number of attempts exceeded. Further plan resets and tool usage are not possible.", is_debug)
+            self._add_buffer(_buffer, CHAT_MSG['max_attempt_exceeded_message'], is_debug)
             
         response = self._response(_buffer)
         self.memory.extend([HumanMessage(content="\n".join(_buffer)), AIMessage(content=response)])

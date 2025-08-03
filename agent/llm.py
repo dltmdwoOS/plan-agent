@@ -1,4 +1,4 @@
-from agent.model import ChainConfig
+from agent.model.chain_config import ChainConfig
 
 def get_llm(chain_config: ChainConfig, tags: list, **kwargs):
     name, model_family, model_name = chain_config.name, chain_config.model_family, chain_config.model_name

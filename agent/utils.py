@@ -8,14 +8,38 @@ import textwrap
 from pathlib import Path
 from string import Template
 from typing import Any, Dict, List, Literal, Tuple
+from importlib.util import spec_from_file_location, module_from_spec
 
 import requests
 import yaml
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 
-from agent.model import ChainConfig
-from agent.path import DESC_DIR, MEMORY_DIR
+from agent.model.chain_config import ChainConfig
+from agent.path import DESC_DIR, MEMORY_DIR, LOCALE_DIR
+
+# --------------------------------------------------------------------------- #
+# Locale related
+# --------------------------------------------------------------------------- #
+def load_locale_const(locale_path = LOCALE_DIR):
+    """locale 환경변수에 맞는 const.py 모듈을 반환한다.
+
+    Returns
+    -------
+    module
+        locale/<ENV>/const.py 모듈 객체
+    """
+    file_path = locale_path / "const.py"
+
+    if not file_path.is_file():
+        raise FileNotFoundError(f"{file_path} 가 존재하지 않습니다.")
+
+    module_name = f"locale_const"        # sys.modules 충돌 방지용
+    spec = spec_from_file_location(module_name, file_path)
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)               # 실제 로드 & 실행
+
+    return module
 
 # --------------------------------------------------------------------------- #
 # Prompt related

@@ -1,15 +1,9 @@
-from dataclasses import dataclass
-from pathlib import Path
 from pydantic import BaseModel, Field
 from typing   import Dict, Any, Optional
 
-@dataclass
-class ChainConfig:
-    name: str
-    yaml: Path
-    model_family: str = "openai"
-    model_name: str  = "gpt-4o-mini"
+from agent.utils import load_locale_const
     
+const = load_locale_const()
 class Plan(BaseModel):
     """
     Model that structures a plan.
@@ -20,11 +14,7 @@ class Plan(BaseModel):
     """
     
     plan: list[Dict[str, Any]] = Field(
-        description=(
-            "List of dictionaries representing the steps of the plan.\n"
-            "Each dictionary includes 'tool' (the action to perform) and 'message' (additional notes).\n"
-            "Example: [{'tool': 'get_datetime', 'message': 'Check today's date'}, {'tool': 'web_search', 'message': 'Using the date found in the previous step, search for today's weather in Seoul with a query like 'Month Day Seoul weather'}]\n"
-        )
+        description=const.PLAN_MODEL_DESC['plan']
     )
 
 class ToolDecision(BaseModel):
@@ -37,14 +27,14 @@ class ToolDecision(BaseModel):
         message (Optional[str]): Reason for selection or additional notes (optional)
     """
     tool: str = Field(
-        description=f"Name of the tool to select. Must be one of the currently available tools."
+        description=const.TOOL_DECISION_MODEL_DESC['tool']
     )
     tool_input: Dict[str, Any] = Field(
-        description="Dictionary of parameters to pass when calling the selected tool."
+        description=const.TOOL_DECISION_MODEL_DESC['tool_input']
     )
     message: Optional[str] = Field(
         default="",
-        description="Reason for selection or notes (optional)"
+        description=const.TOOL_DECISION_MODEL_DESC['message']
     )
     
 class Validation(BaseModel):
@@ -57,11 +47,11 @@ class Validation(BaseModel):
     """
     
     is_valid: bool = Field(
-        description="Whether the plan and execution were valid. True means the plan was executed successfully; False means it failed and a new plan is needed."
+        description=const.VALIDATION_MODEL_DESC['is_valid']
     )
     message: str = Field(
         default="",
-        description="Description message for the validation result. Optional, can provide additional information about the validation result."
+        description=const.VALIDATION_MODEL_DESC['message']
     )
     
 class EntityMemory(BaseModel):
