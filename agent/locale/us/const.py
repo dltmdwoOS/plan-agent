@@ -51,6 +51,13 @@ CHAT_MSG = {
     
 }
 
+# memory.py
+MEMORY_CONST = {
+    'summary_input': "Summarize the conversation so far.",
+    'load_error_message': "An error occurred while loading the conversation history: {e}",
+    'save_error_message': "An error occurred while saving the conversation history: {e}",
+}
+
 # Tool related
 EXECUTE_CODE_CONST = {
     'tabu_import': "❌ Execution denied due to forbidden modules/functions.",

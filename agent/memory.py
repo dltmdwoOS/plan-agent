@@ -1,20 +1,23 @@
-from agent.chains import SummaryChain
-from agent.utils import load_chat_memory, save_chat_memory
 from langchain_core.messages import (
     HumanMessage,
     AIMessage,
     messages_to_dict,
     messages_from_dict
 )
+from agent.chains import SummaryChain
+from agent.utils import load_chat_memory, save_chat_memory
+from agent.utils import load_locale_const
+const = load_locale_const()
+MEMORY_CONST = const.MEMORY_CONST
 
 class Memory:
-    def __init__(self, max_tokens=1e4):
+    def __init__(self, max_tokens=64000):
         self.memory = []
         self.load_memory()
         
         self.tokens = self._count_tokens(self.memory)
         self.max_tokens = max_tokens
-        self.summary_input = [HumanMessage(content="Summarize the conversation so far.")]
+        self.summary_input = [HumanMessage(content=MEMORY_CONST['summary_input'])]
         self.summary_chain = SummaryChain()
         
     def _summarizing(self, is_reset_memory=False):
@@ -41,14 +44,14 @@ class Memory:
             if messages_dict is not None:
                 self.memory = messages_from_dict(messages_dict)
         except Exception as e:
-            return f"An error occurred while loading the conversation history: {e}"
+            return MEMORY_CONST['load_error_message'].format(e=e)
     
     def save_memory(self):
         try:
             messages_dict = messages_to_dict(self.memory)
             save_chat_memory(messages_dict)
         except Exception as e:
-            return f"An error occurred while saving the conversation history: {e}"
+            return MEMORY_CONST['save_error_message'].format(e=e)
     
     def clear_memory(self):
         self.memory = []

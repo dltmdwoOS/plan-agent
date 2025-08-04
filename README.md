@@ -4,27 +4,38 @@
     <img src="res/PlanAgent.png" style="width:80%;">
 </figure>
 
-plan-agent is an AI-powered English text-to-text response generator. It leverages PlanChain and a set of modular tools to answer user queries in a stepwise, explainable manner.
+plan-agent is an AI-powered multilingual text-to-text response generator. It leverages PlanChain and a set of modular tools to answer user queries in a stepwise, explainable manner.
 
 ## Main Features & Architecture
-- Executes a series of tool permutations created by PlanChain to respond to user queries. The process consists of the following four procedures:
-    1. PlanChain
-        - PlanChain is a chain that devises an appropriate plan for the user's question.
-        - Based on the conversation history, it maps out the next actions needed to resolve the current query.
-    2. ToolChain
-        - ToolChain is a chain that, following the previously established plan, selects the proper tool for the current step and executes it to answer the user's question.
-    3. ValidationChain
-        - ValidationChain is a chain that verifies whether the plan for the user's question has been executed correctly.
-        - It checks if the plan proceeded as intended and confirms that meaningful results were produced.
-        - If the plan was not executed or the results are insignificant, it encourages the system to devise a new plan.
-    4. ResponseChain
-        - ResponseChain is a chain that generates the final answer to the user's question.
-        - Drawing on the information and reasoning gathered in the previous stages, it crafts a clear and friendly response.
+### 4-stage reasoning graph
+Executes a series of tool permutations created by PlanChain to respond to user queries. The process consists of the following four procedures:
+1. PlanChain
+    - PlanChain is a chain that devises an appropriate plan for the user's question.
+    - Based on the conversation history, it maps out the next actions needed to resolve the current query.
+2. ToolChain
+    - ToolChain is a chain that, following the previously established plan, selects the proper tool for the current step and executes it to answer the user's question.
+3. ValidationChain
+    - ValidationChain is a chain that verifies whether the plan for the user's question has been executed correctly.
+    - It checks if the plan proceeded as intended and confirms that meaningful results were produced.
+    - If the plan was not executed or the results are insignificant, it encourages the system to devise a new plan.
+4. ResponseChain
+    - ResponseChain is a chain that generates the final answer to the user's question.
+    - Drawing on the information and reasoning gathered in the previous stages, it crafts a clear and friendly response.
 
+### Automatically managed memory system
+- All conversation history that occurs within the current session is managed by the `Memory` object.
+    - If the conversation is prolonged (default: 64000 characters or more), it is summarized by `SummaryChain` to replace the conversation that has been made so far.
+    - To ensure that memory can be maintained even if the current session is interrupted, the user can request the graph to store the memory.
+- All image files used in the conversation are stored as vectors in `chromadb` along with the context of the conversation in which the image was used.
+    - Of course, if the image file is needed again for future conversations, the graph will find the path of the image file from `chromadb` and insert it into the context.
+
+### Multilingual
+- By setting `LOCALE` in `.env`, you can change the agent's language system. Please refer to first step of `Usage` below.
+    - Tested: 'kr', 'us'
 
 ## Supported Tools & Examples
 | Tool Name | Description | Example Query |
-| -- | ---- | ---- |
+| -- | ------ | ---- |
 | `get_datetime` | Get today's date and current time. LM can tune parameter `format` to only take fo the parts it want. | "What time is it now?" |
 | `web_search` | Get top-k(default=4) documents retrieved by `tavily` with query | "Show me today’s US news." |
 | `get_user_location` | Get current user's location. Using googlemap. | "Where am I now?" |

@@ -2,9 +2,9 @@ args:
   query:
     title: Query
     type: string
-description: "웹 검색을 수행하고 상위 k개 결과를 문자열로 반환합니다. (default k=4)\n        \n        Args:\n\
-  \            query (str): 검색 쿼리 (예: '8월 12일자 미국 타임지의 뉴스 헤드라인', '사자성어 무위전변 뜻')\n\
-  \        \n        Returns:\n            str: 검색 결과 string. (예: '1번째 검색 결과\nTitle:\
-  \ ...\nURL: ...\nContent: ...\n\n2번째 검색 결과 ...')"
+description: "웹 검색을 수행하고 상위 k개 결과를 문자열로 반환합니다. (default k=4)\n    \n    Args:\n  \
+  \      query (str): 검색 쿼리 (예: '8월 12일자 미국 타임지의 뉴스 헤드라인', '사자성어 무위전변 뜻')\n    \n\
+  \    Returns:\n        str: 검색 결과 string. (예: '1번째 검색 결과\nTitle: ...\nURL: ...\n\
+  Content: ...\n\n2번째 검색 결과 ...')"
 kind: common
 name: web_search
