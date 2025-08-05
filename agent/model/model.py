@@ -54,5 +54,14 @@ class Validation(BaseModel):
         description=const.VALIDATION_MODEL_DESC['message']
     )
     
-class EntityMemory(BaseModel):
-    pass
+class Entities(BaseModel):
+    """
+    Model that structures entities.
+
+    Args:
+        entities (Dict[str, Any]): A dictionary representing eneities worth remembering.
+    """
+    
+    entities: Dict[str, Any] = Field(
+        description=const.ENTITIES_MODEL_DESC['entities']
+    )

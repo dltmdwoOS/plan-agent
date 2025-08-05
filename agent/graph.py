@@ -127,105 +127,92 @@ class PlanAgent(Agent):
             self.memory.clear_memory()
             return SPECIAL_TOOL_MSG['clear_chat_memory']
         return None
+    
+    # Planning step: generate a plan from the current buffer
+    def _planning_step(self, buffer, is_debug):
+        _input = [HumanMessage(content="\n".join(buffer))]
+        plan = self.plan_chain.invoke({"memory": self.memory.memory, "input": _input}).plan
+        self._add_buffer(buffer, CHAT_MSG['plan_message'].format(plan=plan), is_debug)
+        return plan
 
-    def _response(self, buffer):
-        """Get response as string type, and simultaneously print it."""
+    # Tool step: validate and execute each tool in the plan
+    def _tool_step(self, buffer, plan, is_debug):
+        if not plan:
+            raise ValueError("Plan is empty. Cannot proceed to validation.")
+        for step, tool_json in enumerate(plan):
+            validation, message = self._tool_validator(tool_json)
+            if validation=='false':
+                self._add_buffer(buffer, CHAT_MSG['tool_validation_false_message'].format(step=step+1, message=message), is_debug)
+                break
+            tool_name, tool_message = tool_json['tool'], tool_json['message']
+            tool_output = None
+            # Special tool: no input required
+            tool_output = self._special_tool_use(tool_name, tool_message)
+            if tool_output:
+                self._add_buffer(buffer, CHAT_MSG['tool_output_message'].format(step=step+1, tool_output=tool_output), is_debug)
+                continue
+            # Common tool: input required
+            elif validation=='true':
+                self._add_buffer(buffer, CHAT_MSG['current_tool_message'].format(tool_json=tool_json))
+                _input = [HumanMessage(content="\n".join(buffer))]
+                tool_json = self.tool_chain.invoke(tool=tool_name, vars={"memory": self.memory.memory, "input": _input})
+                buffer.pop()
+            elif validation=='jump':
+                pass
+            self._add_buffer(buffer, CHAT_MSG['tool_complete_message'].format(step=step+1, tool_json=tool_json), is_debug)
+            tool, tool_input = tool_json.tool, tool_json.tool_input
+            tool_output = self._tool_use(tool, tool_input)
+            if tool_output:
+                self._add_buffer(buffer, CHAT_MSG['tool_output_message'].format(step=step+1, tool_output=tool_output), is_debug)
+                continue
+            if tool_output is None:
+                raise ValueError(f"Tool '{tool}' not found in available tools.")
+
+    # Validation step: check if the output is valid
+    def _validation_step(self, buffer, is_debug):
+        _input = [HumanMessage(content="\n".join(buffer))]
+        validation = self.validation_chain.invoke({"input": _input})
+        validation_message = validation.message
+        if validation.is_valid:
+            self._add_buffer(buffer, CHAT_MSG['validation_true_message'].format(validation_message=validation_message), is_debug)
+            return True
+        else:
+            self._add_buffer(buffer, CHAT_MSG['validation_false_message'].format(validation_message=validation_message), is_debug)
+            return False
+
+    # Response step: generate and print the final response, update memory, and handle save request
+    def _response_step(self, buffer, is_debug, accepted):
+        if not accepted:
+            self._add_buffer(buffer, CHAT_MSG['max_attempt_exceeded_message'], is_debug)
         input = [HumanMessage(content="\n".join(buffer))]
         response = self.response_chain.invoke({"memory": self.memory.memory, "input": input})
-
         if type(response) == str:
             print(f"Response:\n{response}")
-
         else:
             response_buffer = []
-
             print("Response:")
             for token in response:
                 print(token, end="", flush=True)
                 response_buffer.append(token)
-                
             response = "".join(response_buffer)
-        
-        return response
-    
-    def chat(self, user_input: str, is_debug=False):
-        _buffer = []
-        _input = []
-        
-        recursion = 0
-        accepted = False
-        
-        self._add_buffer(_buffer, CHAT_MSG['input_message'].format(user_input=user_input), is_debug)
-        while recursion < self.recursion_limit and not accepted:
-            self._add_buffer(_buffer, CHAT_MSG['attempt_message'].format(n_recursion=recursion+1), is_debug)
-            
-            # Planning Step
-            _input = [HumanMessage(content="\n".join(_buffer))]
-            plan = self.plan_chain.invoke({"memory": self.memory.memory, "input": _input}).plan
-            self._add_buffer(_buffer, CHAT_MSG['plan_message'].format(plan=plan), is_debug)
-
-            # Tool Step
-            if not plan:
-                raise ValueError("Plan is empty. Cannot proceed to validation.")
-            
-            for step, tool_json in enumerate(plan):
-                ## 0. Incomplete tool validation
-                validation, message = self._tool_validator(tool_json)
-                if validation=='false':
-                    self._add_buffer(_buffer, CHAT_MSG['tool_validation_false_message'].format(step=step+1, message=message), is_debug)
-                    break # To validation step
-                
-                tool_name, tool_message = tool_json['tool'], tool_json['message']
-                tool_output = None
-
-                # ---------------------------- Special tool : do not need any tool input ----------------------------
-                tool_output = self._special_tool_use(tool_name, tool_message)
-                if tool_output:
-                    self._add_buffer(_buffer, CHAT_MSG['tool_output_message'].format(step=step+1, tool_output=tool_output), is_debug)
-                    continue
-
-                # ----------------------------   Common tool : do need some tool inputs   ----------------------------
-                elif validation=='true':
-                    ## 1. Complete the current step
-                    self._add_buffer(_buffer, CHAT_MSG['current_tool_message'].format(tool_json=tool_json))
-                    _input = [HumanMessage(content="\n".join(_buffer))]
-                    tool_json = self.tool_chain.invoke(tool=tool_name, vars={"memory": self.memory.memory, "input": _input})
-                    _buffer.pop()  # Remove the last incomplete tool from the buffer
-                elif validation=='jump':
-                    pass
-                
-                ## 2. Find the tool in the available tools and invoke it
-                self._add_buffer(_buffer, CHAT_MSG['tool_complete_message'].format(step=step+1, tool_json=tool_json), is_debug)
-                
-                tool, tool_input = tool_json.tool, tool_json.tool_input
-                tool_output = self._tool_use(tool, tool_input)
-                if tool_output:
-                    self._add_buffer(_buffer, CHAT_MSG['tool_output_message'].format(step=step+1, tool_output=tool_output), is_debug)
-                    continue
-
-                if tool_output is None:
-                    raise ValueError(f"Tool '{tool}' not found in available tools.")
-
-            # Validation Step
-            _input = [HumanMessage(content="\n".join(_buffer))]
-            validation = self.validation_chain.invoke({"input": _input})
-            validation_message = validation.message
-            if validation.is_valid:
-                self._add_buffer(_buffer, CHAT_MSG['validation_true_message'].format(validation_message=validation_message), is_debug)
-                accepted = True
-            else:
-                self._add_buffer(_buffer, CHAT_MSG['validation_false_message'].format(validation_message=validation_message), is_debug)
-                recursion += 1
-        
-        # Response Step
-        if not accepted:
-            self._add_buffer(_buffer, CHAT_MSG['max_attempt_exceeded_message'], is_debug)
-            
-        response = self._response(_buffer)
-        self.memory.extend([HumanMessage(content="\n".join(_buffer)), AIMessage(content=response)])
-
-        # If save requirement from `save_chat_memory`
+        self.memory.extend([HumanMessage(content="\n".join(buffer)), AIMessage(content=response)])
         if self.save_request:
             self.memory.save_memory()
             self.save_request = False
+        return response
+    
+    # Main chat loop: orchestrate planning, tool, validation, and response steps
+    def chat(self, user_input: str, is_debug=False):
+        _buffer = []
+        recursion = 0
+        accepted = False
+        self._add_buffer(_buffer, CHAT_MSG['input_message'].format(user_input=user_input), is_debug)
+        while recursion < self.recursion_limit and not accepted:
+            self._add_buffer(_buffer, CHAT_MSG['attempt_message'].format(n_recursion=recursion+1), is_debug)
+            plan = self._planning_step(_buffer, is_debug)
+            self._tool_step(_buffer, plan, is_debug)
+            accepted = self._validation_step(_buffer, is_debug)
+            if not accepted:
+                recursion += 1
+        response = self._response_step(_buffer, is_debug, accepted)
         return response

@@ -4,11 +4,12 @@ from langchain_core.messages import (
     messages_to_dict,
     messages_from_dict
 )
-from agent.chains import SummaryChain
+from agent.chains import EntityMemoryChain, SummaryChain
 from agent.utils import load_chat_memory, save_chat_memory
 from agent.utils import load_locale_const
 const = load_locale_const()
 MEMORY_CONST = const.MEMORY_CONST
+ENTITY_MEMORY_CONST = const.ENTITY_MEMORY_CONST
 
 class Memory:
     def __init__(self, max_tokens=64000):
@@ -62,8 +63,11 @@ class EntityMemory:
     def __init__(self):
         self.memory = {}
         self.entity_memory_chain = EntityMemoryChain()
+        self.query_input_templeate = ENTITY_MEMORY_CONST['query_input_templeate']
         
     def query(self):
-        pass
+        query_input = [HumanMessage(self.query_input_templeate.format(entity_memory=self.memory))]
+        out = self.entity_memory_chain.invoke({"memory": self.memory, "input": query_input})
+        self.memory = out
         
         

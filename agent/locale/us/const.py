@@ -15,6 +15,13 @@ VALIDATION_MODEL_DESC = {
     'is_valid': "Whether the plan and execution were valid. True means the plan was executed successfully; False means it failed and a new plan is needed.",
     'message': "Description message for the validation result. Optional, can provide additional information about the validation result."
 }
+ENTITIES_MODEL_DESC = {
+    'entities': (
+        "Dictionary of entities extracted from the conversation. "
+        "Keys are entity names or types (e.g., 'person', 'location', 'goal'), values are their details. "
+        "Example: { 'person': 'John', 'location': 'Seoul', 'goal': 'Find weather info' }"
+    )
+}
 
 # graph.py
 TOOL_VALIDATOR_MSG = {
@@ -56,6 +63,18 @@ MEMORY_CONST = {
     'summary_input': "Summarize the conversation so far.",
     'load_error_message': "An error occurred while loading the conversation history: {e}",
     'save_error_message': "An error occurred while saving the conversation history: {e}",
+}
+ENTITY_MEMORY_CONST = {
+    'query_input_templeate': (
+        "Update the entity memory based on the conversation history so far and current entities. "
+        "Return only the updated entity memory as a JSON dictionary.\n"
+        "Entity Memory: {entity_memory}"
+    ),
+    'desc': (
+        "EntityMemoryChain extracts and updates entities from the conversation. "
+        "Entities include people, places, organizations, dates, facts, user goals, decisions, or any information worth remembering. "
+        "The output is a JSON dictionary of entities."
+    )
 }
 
 # Tool related

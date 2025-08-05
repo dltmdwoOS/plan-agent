@@ -3,7 +3,7 @@ from pydantic import ValidationError
 from langchain_core.output_parsers import StrOutputParser
 
 from agent.model.chain_config import ChainConfig
-from agent.model.model import Plan, ToolDecision, Validation
+from agent.model.model import Entities, Plan, ToolDecision, Validation
 from agent.llm import get_llm
 from agent.utils import build_prompt, load_tool_descs, tool_desc_format
 from agent.path import PROMPT_DIR
@@ -199,3 +199,20 @@ class SummaryChain(BaseChain):
             extra_placeholders=["memory", "input"]
         )
         self.chain = self.prompt | self.llm | StrOutputParser()
+
+class EntityMemoryChain(BaseChain):
+    def __init__(self, name: str = "EntityMemoryChain"):
+        self.name = name
+        self.description = (
+            
+        )
+        self.llm = get_llm(
+            CHAINS[self.name],
+            tags=["EntityMemory"],
+            temperature=0.3
+        ).with_structured_output(Entities, method='function_calling')
+        self.prompt = build_prompt(
+            CHAINS[self.name],
+            extra_placeholders=["memory", "input"]
+        )
+        self.chain = self.prompt | self.llm
