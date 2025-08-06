@@ -21,6 +21,15 @@ class Memory:
         self.summary_input = [HumanMessage(content=MEMORY_CONST['summary_input'])]
         self.summary_chain = SummaryChain()
         
+    def __repr__(self):
+        result = []
+        for msg in self.memory:
+            if isinstance(msg, HumanMessage):
+                result.append(f' - Human: "{msg.content}"')
+            elif isinstance(msg, AIMessage):
+                result.append(f' - AI: "{msg.content}"')
+        return '\n'.join(result)
+    
     def _summarizing(self, is_reset_memory=False):
         out = self.summary_chain.invoke({"memory": self.memory, "input": self.summary_input})
         summary_message = AIMessage(content=out)
@@ -61,13 +70,13 @@ class Memory:
     
 class EntityMemory:
     def __init__(self):
-        self.memory = {}
+        self.entity_memory = [("void", "void")]
         self.entity_memory_chain = EntityMemoryChain()
         self.query_input_templeate = ENTITY_MEMORY_CONST['query_input_templeate']
         
-    def query(self):
-        query_input = [HumanMessage(self.query_input_templeate.format(entity_memory=self.memory))]
-        out = self.entity_memory_chain.invoke({"memory": self.memory, "input": query_input})
-        self.memory = out
+    def query(self, memory):
+        query_input = [HumanMessage(self.query_input_templeate.format(memory=memory, entity_memory=self.entity_memory))]
+        out = self.entity_memory_chain.invoke({"input": query_input})
+        self.entity_memory = out
         
         

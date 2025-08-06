@@ -38,13 +38,13 @@ CHAT_MSG = {
     'input_message'                 : "Input: {user_input}",
     'attempt_message'               : "\nAttempt {n_recursion}",
     'plan_message'                  : "Plan: {plan}",
+    'current_tool_message'          : "Current Step: {tool_json} TODO!\nCurrent Entity Memory:\n<ENTITY MEMORY START>\n{entity_memory}\n<ENTITY MEMORY END>",
     'tool_validation_false_message' : "Step {step} Error : {message}",
     'tool_complete_message'         : "Plan Step {step} Tool: {tool_json}",
     'tool_output_message'           : (
                                         "Plan Step {step} Tool Output:\n"
                                         "<OUTPUT START>\n{tool_output}\n<OUTPUT END>"
                                       ),
-    'current_tool_message'          : "Current Step: {tool_json} TODO!",
     'validation_true_message'       : (
                                         "Accepted: True\n"
                                         "Validation Message: {validation_message}"
@@ -68,7 +68,8 @@ ENTITY_MEMORY_CONST = {
     'query_input_templeate': (
         "Update the entity memory based on the conversation history so far and current entities. "
         "Return only the updated entity memory as a JSON dictionary.\n"
-        "Entity Memory: {entity_memory}"
+        "Conversation so far:\n{memory}\n"
+        "Current Entity Memory:\n{entity_memory}"
     ),
     'desc': (
         "EntityMemoryChain extracts and updates entities from the conversation. "

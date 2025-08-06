@@ -16,6 +16,7 @@ CHAINS = {
         ChainConfig("ResponseChain",    PROMPT_DIR / "response.yaml"),
         ChainConfig("VisionChain",      PROMPT_DIR / "vision.yaml"),
         ChainConfig("SummaryChain",     PROMPT_DIR / "summary.yaml"),
+        ChainConfig("EntityMemoryChain",PROMPT_DIR / "entity_memory.yaml"),
     ]
 }
 
@@ -98,7 +99,7 @@ class ToolChain(BaseChain):
         self.prompt = build_prompt(
             CHAINS[self.name],
             {'TOOL_FOR_CURRENT_STEP': CURRENT_TOOL_DESC(tool)},
-            ["memory", "input"]
+            ["input"]
         )
         self.chain = (self.prompt | self.llm).with_retry(
             retry_if_exception_type=(ValidationError, ValueError),
@@ -213,6 +214,6 @@ class EntityMemoryChain(BaseChain):
         ).with_structured_output(Entities, method='function_calling')
         self.prompt = build_prompt(
             CHAINS[self.name],
-            extra_placeholders=["memory", "input"]
+            extra_placeholders=["input"]
         )
         self.chain = self.prompt | self.llm

@@ -15,7 +15,8 @@ system: |
   ## Constraints
   1. You **must** return a finished JSON dictionary that strictly follows the output format.
   2. Read the description of the current tool carefully and provide the `tool_input` required by that tool.
-
+  3. If input contains some `entity_memory`, you can use it as a reference to construct tool_input.
+  
   ## Example (for reference)
   [HumanMessage] What's the weather like in Seoul today?  
   [AIMessage] … Current Step : {'tool': 'web_search', …} TODO!  

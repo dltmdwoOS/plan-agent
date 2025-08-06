@@ -79,4 +79,5 @@ print(response)
 
 ## TODO
 
-- Entity Memory : A dynamic memory for ToolChain.
+- Entity Memory: A dynamic memory for ToolChain.
+- Async: Convert most jobs to asynchronous

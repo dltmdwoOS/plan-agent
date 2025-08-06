@@ -3,7 +3,7 @@ load_dotenv()
 
 import yaml
 
-from agent.memory import Memory
+from agent.memory import EntityMemory, Memory
 from agent.path import DESC_DIR
 
 from langchain_core.messages import (
@@ -32,7 +32,8 @@ class Agent:
 class PlanAgent(Agent):
     def __init__(self, session_id, recursion_limit=5, max_memory_tokens=1e4, is_stream: bool=True):
         super().__init__(session_id, recursion_limit, max_memory_tokens)
-        
+        self.entity_memory = EntityMemory()
+
         self.tools = TOOL_REGISTRY.values()
         self.special_tools = SPECIAL_TOOL_REGISTRY
         self.plan_chain = PlanChain()
@@ -153,12 +154,10 @@ class PlanAgent(Agent):
                 continue
             # Common tool: input required
             elif validation=='true':
-                self._add_buffer(buffer, CHAT_MSG['current_tool_message'].format(tool_json=tool_json))
+                self._add_buffer(buffer, CHAT_MSG['current_tool_message'].format(tool_json=tool_json, entity_memory=self.entity_memory.entity_memory))
                 _input = [HumanMessage(content="\n".join(buffer))]
-                tool_json = self.tool_chain.invoke(tool=tool_name, vars={"memory": self.memory.memory, "input": _input})
+                tool_json = self.tool_chain.invoke(tool=tool_name, vars={"input": _input})
                 buffer.pop()
-            elif validation=='jump':
-                pass
             self._add_buffer(buffer, CHAT_MSG['tool_complete_message'].format(step=step+1, tool_json=tool_json), is_debug)
             tool, tool_input = tool_json.tool, tool_json.tool_input
             tool_output = self._tool_use(tool, tool_input)
@@ -215,4 +214,5 @@ class PlanAgent(Agent):
             if not accepted:
                 recursion += 1
         response = self._response_step(_buffer, is_debug, accepted)
+        self.entity_memory.query(self.memory) # Entity Memory Update
         return response

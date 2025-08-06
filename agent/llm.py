@@ -1,6 +1,7 @@
+from langchain_core.language_models import BaseChatModel
 from agent.model.chain_config import ChainConfig
 
-def get_llm(chain_config: ChainConfig, tags: list, **kwargs):
+def get_llm(chain_config: ChainConfig, tags: list, **kwargs) -> BaseChatModel:
     name, model_family, model_name = chain_config.name, chain_config.model_family, chain_config.model_name
     if model_family=='openai':
         from langchain_openai import ChatOpenAI
