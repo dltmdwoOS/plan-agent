@@ -70,13 +70,13 @@ class Memory:
     
 class EntityMemory:
     def __init__(self):
-        self.entity_memory = [("void", "void")]
+        self.entity_memory = {}
         self.entity_memory_chain = EntityMemoryChain()
         self.query_input_templeate = ENTITY_MEMORY_CONST['query_input_templeate']
         
     def query(self, memory):
         query_input = [HumanMessage(self.query_input_templeate.format(memory=memory, entity_memory=self.entity_memory))]
         out = self.entity_memory_chain.invoke({"input": query_input})
-        self.entity_memory = out
+        self.entity_memory = out.entities
         
         

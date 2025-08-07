@@ -70,11 +70,6 @@ ENTITY_MEMORY_CONST = {
         "Return only the updated entity memory as a JSON dictionary.\n"
         "Conversation so far:\n{memory}\n"
         "Current Entity Memory:\n{entity_memory}"
-    ),
-    'desc': (
-        "EntityMemoryChain extracts and updates entities from the conversation. "
-        "Entities include people, places, organizations, dates, facts, user goals, decisions, or any information worth remembering. "
-        "The output is a JSON dictionary of entities."
     )
 }
 

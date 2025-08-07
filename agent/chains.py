@@ -1,6 +1,6 @@
 
 from pydantic import ValidationError
-from langchain_core.output_parsers import StrOutputParser
+from langchain_core.output_parsers import StrOutputParser, PydanticOutputParser
 
 from agent.model.chain_config import ChainConfig
 from agent.model.model import Entities, Plan, ToolDecision, Validation
@@ -202,18 +202,25 @@ class SummaryChain(BaseChain):
         self.chain = self.prompt | self.llm | StrOutputParser()
 
 class EntityMemoryChain(BaseChain):
-    def __init__(self, name: str = "EntityMemoryChain"):
+    def __init__(self, name: str = "EntityMemoryChain", max_attempt=3):
         self.name = name
+        self.max_attempt = max_attempt
         self.description = (
-            
+            "EntityMemoryChain extracts and updates entities from the conversation. "
+            "Entities include people, places, organizations, dates, facts, user goals, decisions, or any information worth remembering. "
+            "The output is a JSON dictionary of entities."
         )
         self.llm = get_llm(
             CHAINS[self.name],
             tags=["EntityMemory"],
             temperature=0.3
-        ).with_structured_output(Entities, method='function_calling')
+        )
         self.prompt = build_prompt(
             CHAINS[self.name],
             extra_placeholders=["input"]
         )
-        self.chain = self.prompt | self.llm
+        self.parser = PydanticOutputParser(pydantic_object=Entities)
+        self.chain = (self.prompt | self.llm | self.parser).with_retry(
+            retry_if_exception_type=(ValidationError, ValueError),
+            stop_after_attempt=self.max_attempt
+        )
