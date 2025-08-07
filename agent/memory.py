@@ -59,7 +59,8 @@ class Memory:
     def save_memory(self):
         try:
             messages_dict = messages_to_dict(self.memory)
-            save_chat_memory(messages_dict)
+            import asyncio
+            asyncio.create_task(save_chat_memory(messages_dict))
         except Exception as e:
             return MEMORY_CONST['save_error_message'].format(e=e)
     

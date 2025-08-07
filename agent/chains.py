@@ -1,4 +1,4 @@
-
+import asyncio
 from pydantic import ValidationError
 from langchain_core.output_parsers import StrOutputParser, PydanticOutputParser
 
@@ -58,6 +58,20 @@ class BaseChain():
         if self.chain is None:
             raise NotImplementedError("Chain is not implemented.")
         return self.chain.invoke(vars)
+    
+    async def ainvoke(self, vars: dict):
+        """
+        Execute the chain asynchronously with the given memory and return the result.
+
+        Args:
+            vars: Variable dictionary required to invoke the chain.
+
+        Returns:
+            The result produced by the chain.
+        """
+        if self.chain is None:
+            raise NotImplementedError("Chain is not implemented.")
+        return await self.chain.ainvoke(vars)
 
 class PlanChain(BaseChain):
     def __init__(self, name: str = "PlanChain"):
@@ -107,6 +121,20 @@ class ToolChain(BaseChain):
             wait_exponential_jitter=True
         )
         return self.chain.invoke(vars)
+    
+    async def ainvoke(self, tool: str, vars):
+        self.prompt = await asyncio.to_thread(
+            build_prompt,
+            CHAINS[self.name],
+            {'TOOL_FOR_CURRENT_STEP': CURRENT_TOOL_DESC(tool)},
+            ["input"]
+        )
+        self.chain = (self.prompt | self.llm).with_retry(
+            retry_if_exception_type=(ValidationError, ValueError),
+            stop_after_attempt=self.max_attempt,
+            wait_exponential_jitter=True
+        )
+        return await self.chain.ainvoke(vars)
 
 class ValidationChain(BaseChain):
     def __init__(self, name: str = "ValidationChain"):

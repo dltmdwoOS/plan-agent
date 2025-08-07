@@ -2,15 +2,12 @@ from __future__ import annotations
 
 import inspect
 import json
-import os
-import tarfile
 import textwrap
 from pathlib import Path
 from string import Template
 from typing import Any, Dict, List, Literal, Tuple
 from importlib.util import spec_from_file_location, module_from_spec
 
-import requests
 import yaml
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -196,11 +193,11 @@ def load_tool_descs() -> List[Dict[str, Any]]:
 def preload_embedding_model():
     pass
 
-
 # --------------------------------------------------------------------------- #
 # Chat memory related
 # --------------------------------------------------------------------------- #
-def save_chat_memory(data: List) -> None:
+import aiofiles
+async def save_chat_memory(data: List) -> None:
     """
     Persist chat memory to ``MEMORY_DIR/chat_memory.yaml`` in a human-readable form.
 
@@ -209,14 +206,14 @@ def save_chat_memory(data: List) -> None:
     data : list
         A list of messages to serialize with PyYAML.
     """
-    with open(MEMORY_DIR / "chat_memory.yaml", "w", encoding="utf-8") as fh:
-        yaml.dump(
+    async with aiofiles.open(MEMORY_DIR / "chat_memory.yaml", "w", encoding="utf-8") as fh:
+        yaml_str = yaml.dump(
             data,
-            fh,
             allow_unicode=True,
             sort_keys=False,
             default_flow_style=False,
         )
+        await fh.write(yaml_str)
 
 def load_chat_memory() -> Any:
     """
